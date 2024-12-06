@@ -6,6 +6,7 @@ document.getElementById('stateInput').addEventListener('keydown', (event) => {
     }
 });
 
+// Initialize U.S. map
 fetch('assets/us.svg')
     .then(response => {
         if (!response.ok) throw new Error('Failed to load SVG');
@@ -26,16 +27,28 @@ fetch('assets/us.svg')
     })
     .catch(error => console.error('Error loading SVG:', error));
 
-document.getElementById('highlightBtn').addEventListener('click', () => {
-    const stateInput = document.getElementById('stateInput').value.trim().toLowerCase();
-
+// TODO update to take in tuple with probabilities, and change color on gradient
+/*
+ * Highlights all the states in the array {queried_states}
+ * @param {queried_states} capitalization insensitive states to highlight
+ * @return void
+ */
+function highlightStates(queried_states) {
+    console.log('Queried states:', queried_states);
+    queried_states = queried_states.map((state) => state.toLowerCase())
+    // Reset highlight of all states
     const states = document.querySelectorAll('.state');
     states.forEach(state => state.classList.remove('highlight'));
 
-    const stateElement = Array.from(states).find(state =>
-        state.getAttribute('data-name')?.toLowerCase() === stateInput
+    const stateElements = Array.from(states).filter(state =>
+        queried_states.includes(state.getAttribute('data-name')?.toLowerCase())
     );
+    if (stateElements.length === 0) {console.log("No states updated")}
+    else {stateElements.forEach(state => {state.classList.add('highlight');})}
 
-    if (stateElement) stateElement.classList.add('highlight');
-    else alert('State not found!');
+}
+document.getElementById('highlightBtn').addEventListener('click', () => {
+    const stateInput = document.getElementById('stateInput').value.trim().toLowerCase();
+
+    highlightStates(Array.of(stateInput));
 });
