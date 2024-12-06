@@ -1,0 +1,10 @@
+.state {
+    fill: #cccccc; /* Default visible state color */
+    stroke: #ffffff; /* State borders */
+    stroke-width: 1;
+    cursor: pointer;
+    transition: fill 0.3s ease; /* Smooth transition */
+}
+.highlight {
+    fill: red !important; /* Highlight color */
+}
