@@ -38,12 +38,23 @@ class State {
 const state_map = new Map();
 
 // All 50 U.S. states in alphabetical order
-const state_names = Array.of("Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming");
+const state_names = Array.of(
+    "alabama", "alaska", "arizona", "arkansas", "california", "colorado",
+    "connecticut", "delaware", "florida", "georgia", "hawaii", "idaho",
+    "illinois", "indiana", "iowa", "kansas", "kentucky", "louisiana", "maine",
+    "maryland", "massachusetts", "michigan", "minnesota", "mississippi",
+    "missouri", "montana", "nebraska", "nevada", "new hampshire", "new jersey",
+    "new mexico", "new york", "north carolina", "north dakota", "ohio",
+    "oklahoma", "oregon", "pennsylvania", "rhode island", "south carolina",
+    "south dakota", "tennessee", "texas", "utah", "vermont", "virginia",
+    "washington", "west virginia", "wisconsin", "wyoming"
+);
 
 state_names.forEach(state_name => {
     state_map.set(state_name, 0);
 })
 
+// TODO add target color as function parameter
 // Fill a {state} object with its attributed brightness value
 function fillState(stateElement, value) {
     // Ensure brightness is between 0 and 1
@@ -77,20 +88,43 @@ function fillState(stateElement, value) {
  */
 function highlightStates(queried_states) {
     console.log('Queried states:', queried_states);
-    queried_states = queried_states.map((state) => state.toLowerCase())
     // Reset highlight of all states
     const states = document.querySelectorAll('.state');
     states.forEach(state => state.classList.remove('highlight'));
 
-    const stateElements = Array.from(states).filter(state =>
-        queried_states.includes(state.getAttribute('data-name')?.toLowerCase())
-    );
-
-    if (stateElements.length === 0) {console.log("No states updated")}
-    else {stateElements.forEach(state => {fillState(state, 1);})}
-
+    states.forEach(state => {
+        const state_name = state.getAttribute('data-name').toLowerCase();
+        console.log(state_name);
+        if (queried_states.has(state_name)) {
+            console.log("Queried: ", state_name)
+            fillState(state, queried_states.get(state_name));
+        } else {
+            fillState(state, 0);
+        }
+    });
 }
 document.getElementById('highlightBtn').addEventListener('click', () => {
     const stateInput = document.getElementById('stateInput').value.trim().toLowerCase();
-    highlightStates(Array.of(stateInput));
+
+
+
+    // Array of state objects that contain their associated brightness values
+    const state_array = Array.of(new State(stateInput, 1));
+
+    const state_map_clone = new Map(state_map)
+
+    state_array.forEach(stateObj => {
+        const state = stateObj.state;
+        if (state_map_clone.has(state)) {
+            state_map_clone.set(state, stateObj.val);
+        }
+    })
+
+    // LIGHT SHOW!!
+    const randomArray = Array.from({ length: 50 }, () => Math.round(Math.random()));
+    randomArray.forEach((item, i) => {
+        state_map_clone.set(state_names[i], item);
+    })
+
+    highlightStates(state_map_clone);
 });
