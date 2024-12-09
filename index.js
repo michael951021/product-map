@@ -54,36 +54,52 @@ state_names.forEach(state_name => {
     state_map.set(state_name, 0);
 })
 
-// TODO add target color as function parameter
-// Fill a {state} object with its attributed brightness value
-function fillState(stateElement, value) {
+/*
+ * Color a state element with a brightness value and a color target
+ *
+ * @param {Element} stateElement - HTML element of the state in the svg
+ * @param {number} value - Brightness value of the color in [0,1]
+ * @param {string} [targetColor='rgb(255, 0, 0)'] - The target color for interpolation, defaulting to red.
+ * @return void
+ */
+function fillState(stateElement, value, targetColor = 'rgb(255, 0, 0)') {
+    if (!stateElement) {
+        console.error(`State element not found.`);
+        return;
+    }
+
     // Ensure brightness is between 0 and 1
-    let brightness = 0;
-    if (value < 0) brightness = 0;
-    else if (value > 1) brightness = 1;
-    else brightness = value;
+    let brightness = Math.max(0, Math.min(1, value));
 
-    // Base gray color: #cccccc
-    const baseGray = 204; // Decimal value of #cc in RGB
+    // Retrieve the base color from the .state CSS class or the current element
+    const computedStyle = getComputedStyle(stateElement);
+    const baseColor = computedStyle.fill || 'rgb(204, 204, 204)'; // Default to #cccccc if not set
 
-    // Interpolate between gray and red
-    const redValue = Math.round(baseGray + (255 - baseGray) * brightness); // Blend from gray to red
-    const greenBlueValue = Math.round(baseGray * (1 - brightness)); // Reduce gray components as brightness increases
+    // Parse the base and target colors into RGB components
+    const parseRGB = (color) => {
+        const match = color.match(/\d+/g);
+        return match ? match.map(Number) : [204, 204, 204];
+    };
+    const [baseR, baseG, baseB] = parseRGB(baseColor);
+    const [targetR, targetG, targetB] = parseRGB(targetColor);
+
+    // Interpolate between base and target colors
+    const interpolate = (start, end, factor) => Math.round(start + (end - start) * factor);
+    const redValue = interpolate(baseR, targetR, brightness);
+    const greenValue = interpolate(baseG, targetG, brightness);
+    const blueValue = interpolate(baseB, targetB, brightness);
 
     // Construct the RGB color
-    const fillColor = `rgb(${redValue}, ${greenBlueValue}, ${greenBlueValue})`;
+    const fillColor = `rgb(${redValue}, ${greenValue}, ${blueValue})`;
 
-    if (stateElement) {
-        stateElement.style.fill = fillColor;
-    } else {
-        console.error(`State element not found.`);
-    }
+    // Apply the fill color to the element
+    stateElement.style.fill = fillColor;
 }
 
-// TODO update to take in tuple with probabilities, and change color on gradient
 /*
- * Highlights all the states in the array {queried_states}
- * @param {queried_states} capitalization insensitive states to highlight
+ * Highlights all the states in the map queried_states with their associated brightness
+ *
+ * @param {Object.<string, number>} queried_states - Map of lowercase state names to value in [0,1]
  * @return void
  */
 function highlightStates(queried_states) {
@@ -121,10 +137,10 @@ document.getElementById('highlightBtn').addEventListener('click', () => {
     })
 
     // LIGHT SHOW!!
-    const randomArray = Array.from({ length: 50 }, () => Math.round(Math.random()));
-    randomArray.forEach((item, i) => {
-        state_map_clone.set(state_names[i], item);
-    })
+    // const randomArray = Array.from({ length: 50 }, () => Math.round(Math.random()));
+    // randomArray.forEach((item, i) => {
+    //     state_map_clone.set(state_names[i], item);
+    // })
 
     highlightStates(state_map_clone);
 });
